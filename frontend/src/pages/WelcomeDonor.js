@@ -1,17 +1,30 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function WelcomeDonor() {
 
+  const navigate = useNavigate();
   const [needs, setNeeds] = useState([]);
 
   useEffect(() => {
+    if (localStorage.getItem("authRole") !== "donor" || !localStorage.getItem("authLogin")) {
+      navigate("/donor-auth");
+      return;
+    }
+
     fetchNeeds();
-  }, []);
+  }, [navigate]);
 
   const fetchNeeds = async () => {
     const res = await axios.get("http://localhost:5000/api/needs/all");
     setNeeds(res.data);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("authRole");
+    localStorage.removeItem("authLogin");
+    navigate("/donor-auth");
   };
 
   const donate = async (id) => {
@@ -30,7 +43,10 @@ function WelcomeDonor() {
   return (
     <div>
 
-      <h1>Donor Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Donor Dashboard</h1>
+        <button onClick={logout}>Logout</button>
+      </div>
 
       {/* DISPLAY ALL NEEDS */}
       {needs.map((n, i) => (

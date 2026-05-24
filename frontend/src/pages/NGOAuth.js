@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function NGOAuth() {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("authRole") === "ngo") {
+      navigate("/welcome-ngo");
+    }
+  }, [navigate]);
 
   const [isSignup, setIsSignup] = useState(true);
   const [showOtp, setShowOtp] = useState(false);
@@ -61,6 +67,8 @@ function NGOAuth() {
     alert(res.data.message);
 
     if (res.data.success) {
+      localStorage.setItem("authRole", "ngo");
+      localStorage.setItem("authLogin", formData.login);
       navigate("/welcome-ngo");
     }
   };

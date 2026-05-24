@@ -14,6 +14,7 @@ const organizationSchema = new mongoose.Schema({
   phone: String,
   email: String,
   password: String,
+  AccNo: String,
   needs: [needSchema],
 
   // ✅ ADD THESE (THIS IS THE FIX)

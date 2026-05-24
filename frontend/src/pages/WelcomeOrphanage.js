@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function WelcomeOrphanage() {
 
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [needs, setNeeds] = useState([]);
 
@@ -15,16 +17,23 @@ function WelcomeOrphanage() {
   });
 
   // GET LOGIN FROM STORAGE
-  const userEmailOrPhone = localStorage.getItem("login");
+  const userEmailOrPhone = localStorage.getItem("authLogin");
 
   // FETCH NEEDS
   useEffect(() => {
+    if (localStorage.getItem("authRole") !== "orphanage" || !userEmailOrPhone) {
+      navigate("/orphanage-auth");
+      return;
+    }
+
     fetchNeeds();
-  }, []);
+  }, [navigate, userEmailOrPhone]);
 
   const fetchNeeds = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/needs/orphanage");
+      const res = await axios.get(
+        `http://localhost:5000/api/needs/orphanage?login=${encodeURIComponent(userEmailOrPhone)}`
+      );
       setNeeds(res.data);
     } catch (err) {
       console.log(err);
@@ -82,7 +91,16 @@ function WelcomeOrphanage() {
   return (
     <div>
 
-      <h1>Orphanage Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Orphanage Dashboard</h1>
+        <button onClick={() => {
+          localStorage.removeItem("authRole");
+          localStorage.removeItem("authLogin");
+          navigate("/orphanage-auth");
+        }}>
+          Logout
+        </button>
+      </div>
 
       {/* POST BUTTON */}
       <button onClick={() => setShowForm(true)}>
@@ -158,9 +176,6 @@ function WelcomeOrphanage() {
           </div>
         ))
       )}
-      <form>
-        <button>Logout</button>
-      </form>
 
     </div>
   );

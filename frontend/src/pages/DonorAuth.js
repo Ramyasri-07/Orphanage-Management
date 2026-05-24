@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function DonorAuth() {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("authRole") === "donor") {
+      navigate("/welcome-donor");
+    }
+  }, [navigate]);
 
   const [isSignup, setIsSignup] = useState(true);
   const [showOtp, setShowOtp] = useState(false);
@@ -60,6 +66,8 @@ function DonorAuth() {
     alert(res.data.message);
 
     if (res.data.success) {
+      localStorage.setItem("authRole", "donor");
+      localStorage.setItem("authLogin", formData.login);
       navigate("/welcome-donor");
     }
   };

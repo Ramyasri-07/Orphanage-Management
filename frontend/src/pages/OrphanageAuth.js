@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function OrphanageAuth() {
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("authRole") === "orphanage") {
+      navigate("/welcome-orphanage");
+    }
+  }, [navigate]);
 
   const [isSignup, setIsSignup] = useState(true);
   const [showOtp, setShowOtp] = useState(false);
@@ -14,6 +20,7 @@ function OrphanageAuth() {
     personName: "",
     phone: "",
     email: "",
+    AccNo: "",
     login: "",
     otp: ""
   });
@@ -25,14 +32,23 @@ function OrphanageAuth() {
     });
   };
 
-  const handleSignup = async () => {
-    const res = await axios.post(
-      "http://localhost:5000/api/orphanage/signup",
-      formData
-    );
+const handleSignup = async () => {
 
-    alert(res.data.message);
-  };
+  // Only 10 digits validation
+  if (!/^\d{10}$/.test(formData.AccNo)) {
+    alert("Please enter correct account number");
+    return;
+  }
+
+  const res = await axios.post(
+    "http://localhost:5000/api/orphanage/signup",
+    formData
+  );
+
+  alert(res.data.message);
+};
+
+  
 
   const sendOtp = async () => {
     const res = await axios.post(
@@ -60,9 +76,11 @@ function OrphanageAuth() {
 
     alert(res.data.message);
 
-   if (res.data.success) {
-  navigate("/welcome-orphanage");
-}
+    if (res.data.success) {
+      localStorage.setItem("authRole", "orphanage");
+      localStorage.setItem("authLogin", formData.login);
+      navigate("/welcome-orphanage");
+    }
   };
 
   return (
@@ -76,6 +94,8 @@ function OrphanageAuth() {
           <input name="personName" placeholder="Person Name" onChange={handleChange} />
           <input name="phone" placeholder="Phone" onChange={handleChange} />
           <input name="email" placeholder="Email" onChange={handleChange} />
+          <input name="AccNo" placeholder="Bank Account Number" maxLength="10" onChange={handleChange}/>
+          
 
           <button onClick={handleSignup}>Signup</button>
         </>
