@@ -25,6 +25,8 @@ app.use("/api/orphanage", orphanageRoutes);
 app.use("/api/ngo", ngoRoutes);
 app.use("/api/needs", needsRoutes);
 
+app.use("/api/donation", require("./routes/donation"));
+
 app.listen(5000, () => {
   console.log("Server Running on port 5000");
 });

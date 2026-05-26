@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function WelcomeDonor() {
 
+function WelcomeDonor() {
   const navigate = useNavigate();
   const [needs, setNeeds] = useState([]);
+  // STEP 2 — Add State Variable
+  const [amount, setAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedNeed, setSelectedNeed] = useState(null);
 
   useEffect(() => {
     if (localStorage.getItem("authRole") !== "donor" || !localStorage.getItem("authLogin")) {
@@ -27,22 +32,12 @@ function WelcomeDonor() {
     navigate("/donor-auth");
   };
 
-  const donate = async (id) => {
-    const amount = prompt("Enter donation amount");
-
-    if (!amount) return;
-
-    const res = await axios.post("http://localhost:5000/api/needs/donate", {
-      needId: id,
-      amount
-    });
-
-    alert(res.data.message);
+  const donate = (id) => {
+    setSelectedNeed(id);
+    setShowModal(true);
   };
-
   return (
     <div>
-
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>Donor Dashboard</h1>
         <button onClick={logout}>Logout</button>
@@ -51,20 +46,94 @@ function WelcomeDonor() {
       {/* DISPLAY ALL NEEDS */}
       {needs.map((n, i) => (
         <div key={i} style={{ border: "1px solid gray", margin: 10, padding: 10 }}>
-
           <h3>{n.title}</h3>
           <p>{n.description}</p>
           <p>Category: {n.category}</p>
           <p>Target: ₹{n.targetAmount}</p>
           <p>Deadline: {n.deadline}</p>
-
           <button onClick={() => donate(n._id)}>
             Donate
           </button>
-
         </div>
       ))}
 
+      {/* Donation Modal */}
+      {showModal && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000
+        }}>
+          <div style={{ background: "#fff", padding: 30, borderRadius: 8, minWidth: 300 }}>
+            <h2>Donate</h2>
+            <input
+              type="number"
+              placeholder="Enter amount"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              style={{ width: "100%", marginBottom: 10 }}
+            />
+            {/* STEP 1 — Add Payment Method Dropdown */}
+            <select
+              value={paymentMethod}
+              onChange={e => setPaymentMethod(e.target.value)}
+              style={{ width: "100%", marginBottom: 10 }}
+            >
+              <option value="">Select Payment Method</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Net Banking">Net Banking</option>
+            </select>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button onClick={async () => {
+                // STEP 4 — Add Validation
+                if (!amount || isNaN(amount) || Number(amount) <= 0) {
+                  alert("Enter valid donation amount");
+                  return;
+                }
+                if (paymentMethod === "") {
+                  alert("Select payment method");
+                  return;
+                }
+                // STEP 3 — Generate Transaction ID
+                const transactionId = "TXN" + Date.now();
+                try {
+                  // STEP 6 — Send Data To Backend
+                  await axios.post("http://localhost:5000/api/donation", {
+                    amount,
+                    paymentMethod,
+                    transactionId,
+                    needId: selectedNeed,
+                    donorLogin: localStorage.getItem("authLogin")
+                  });
+                  // STEP 5 — Show Success Message
+                  alert(`Donation Successful!\nTransaction ID: ${transactionId}`);
+                  setShowModal(false);
+                  setAmount("");
+                  setPaymentMethod("");
+                  setSelectedNeed(null);
+                } catch (err) {
+                  console.error("Donation error:", err, err?.response?.data);
+                  alert("Error processing donation");
+                }
+              }}>Donate</button>
+              <button onClick={() => {
+                setShowModal(false);
+                setAmount("");
+                setPaymentMethod("");
+                setSelectedNeed(null);
+              }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
