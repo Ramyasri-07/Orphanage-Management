@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Donation = require("../models/Donation");
+const Organization = require("../models/Organization");
 
 router.post("/", async (req, res) => {
    try {
@@ -15,12 +16,38 @@ router.post("/", async (req, res) => {
          donorLogin
       });
 
-      await newDonation.save();
+    await newDonation.save();
 
-      res.json({
-         success: true,
-         message: "Donation Stored"
-      });
+// Find the organization containing this need
+const organization = await Organization.findOne({
+   "needs._id": needId
+});
+
+if (organization) {
+   const need = organization.needs.id(needId);
+
+   if (need) {
+      need.donatedAmount =
+         (need.donatedAmount || 0) + Number(amount);
+
+      // Remove need if target reached
+      if (need.donatedAmount >= need.targetAmount) {
+         organization.needs.pull(needId);
+      }
+
+      await organization.save();
+      const updatedOrg = await Organization.findOne({
+  "needs._id": needId
+});
+
+console.log("UPDATED ORG:", updatedOrg);
+   }
+}
+
+res.json({
+   success: true,
+   message: "Donation Stored"
+});
    } catch (error) {
       console.error("Error storing donation:", error);
       res.status(500).json({

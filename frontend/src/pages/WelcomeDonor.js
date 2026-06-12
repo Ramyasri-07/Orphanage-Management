@@ -23,6 +23,7 @@ function WelcomeDonor() {
 
   const fetchNeeds = async () => {
     const res = await axios.get("http://localhost:5000/api/needs/all");
+    
     setNeeds(res.data);
   };
 
@@ -44,18 +45,23 @@ function WelcomeDonor() {
       </div>
 
       {/* DISPLAY ALL NEEDS */}
-      {needs.map((n, i) => (
-        <div key={i} style={{ border: "1px solid gray", margin: 10, padding: 10 }}>
-          <h3>{n.title}</h3>
-          <p>{n.description}</p>
-          <p>Category: {n.category}</p>
-          <p>Target: ₹{n.targetAmount}</p>
-          <p>Deadline: {n.deadline}</p>
-          <button onClick={() => donate(n._id)}>
-            Donate
-          </button>
-        </div>
-      ))}
+{needs.map((n) => (
+  <div key={n._id} style={{ border: "1px solid gray", margin: 10, padding: 10 }}>
+    <h3>{n.title}</h3>
+    <p>{n.description}</p>
+    <p>Category: {n.category}</p>
+
+    <p>Target: ₹{n.targetAmount}</p>
+    <p>Donated: ₹{n.donatedAmount || 0}</p>
+    <p>Remaining: ₹{n.remainingAmount}</p>
+
+    <p>Deadline: {n.deadline}</p>
+
+    <button onClick={() => donate(n._id)}>
+      Donate
+    </button>
+  </div>
+))}
 
       {/* Donation Modal */}
       {showModal && (
@@ -106,13 +112,14 @@ function WelcomeDonor() {
                 const transactionId = "TXN" + Date.now();
                 try {
                   // STEP 6 — Send Data To Backend
-                  await axios.post("http://localhost:5000/api/donation", {
-                    amount,
+                  await axios.post("http://localhost:5000/api/needs/donate", {
+                    amount: Number(amount),
                     paymentMethod,
                     transactionId,
                     needId: selectedNeed,
                     donorLogin: localStorage.getItem("authLogin")
                   });
+                  await fetchNeeds();
                   // STEP 5 — Show Success Message
                   alert(`Donation Successful!\nTransaction ID: ${transactionId}`);
                   setShowModal(false);

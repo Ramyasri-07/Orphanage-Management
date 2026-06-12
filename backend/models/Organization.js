@@ -5,6 +5,12 @@ const needSchema = new mongoose.Schema({
   description: String,
   category: String,
   targetAmount: Number,
+
+  donatedAmount: {
+    type: Number,
+    default: 0
+  },
+
   deadline: String
 });
 

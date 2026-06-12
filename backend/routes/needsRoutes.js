@@ -4,21 +4,27 @@ const Organization = require("../models/Organization");
 
 // GET ALL NEEDS FOR DONORS
 router.get("/all", async (req, res) => {
-  const organizations = await Organization.find({ "needs.0": { $exists: true } });
+ const organizations = await Organization.find({});
 
   const needs = organizations.flatMap((org) =>
-    org.needs.map((need) => ({
-      _id: need._id,
-      title: need.title,
-      description: need.description,
-      category: need.category,
-      targetAmount: need.targetAmount,
-      deadline: need.deadline,
-      orphanageName: org.orphanageName,
-      email: org.email,
-      phone: org.phone
-    }))
-  );
+  org.needs.map((need) => ({
+    _id: need._id,
+    title: need.title,
+    description: need.description,
+    category: need.category,
+
+    targetAmount: need.targetAmount,
+    donatedAmount: need.donatedAmount || 0,
+
+   remainingAmount: Number(need.targetAmount) - Number(need.donatedAmount || 0);
+
+    deadline: need.deadline,
+
+    orphanageName: org.orphanageName,
+    email: org.email,
+    phone: org.phone
+  }))
+);
 
   res.json(needs);
 });
@@ -71,9 +77,7 @@ router.post("/create", async (req, res) => {
     targetAmount,
     deadline
   });
-
   await organization.save();
-
   res.json({
     success: true,
     message: "Need posted successfully"
@@ -82,28 +86,61 @@ router.post("/create", async (req, res) => {
 
 // DONATE TO A NEED
 router.post("/donate", async (req, res) => {
-  const { needId, amount } = req.body;
+  try {
+    const { needId, amount } = req.body;
 
-  const organization = await Organization.findOne({ "needs._id": needId });
+    if (!amount || Number(amount) <= 0) {
+      return res.json({
+        success: false,
+        message: "Donation amount must be greater than zero"
+      });
+    }
 
-  if (!organization) {
-    return res.json({
+    const organization = await Organization.findOne({
+      "needs._id": needId
+    });
+
+    if (!organization) {
+      return res.json({
+        success: false,
+        message: "Need not found"
+      });
+    }
+
+    const need = organization.needs.id(needId);
+
+    need.donatedAmount =
+      (need.donatedAmount || 0) + Number(amount);
+
+    if (need.donatedAmount >= need.targetAmount) {
+      organization.needs.pull(needId);
+
+      await organization.save();
+
+      return res.json({
+        success: true,
+        message: "Need completed and removed from list"
+      });
+    }
+
+    await organization.save();
+
+    res.json({
+      success: true,
+      message: "Donation successful",
+      donatedAmount: need.donatedAmount,
+      remainingAmount:
+        need.targetAmount - need.donatedAmount
+    });
+
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).json({
       success: false,
-      message: "Need not found"
+      message: "Server Error"
     });
   }
-
-  if (!amount || Number(amount) <= 0) {
-    return res.json({
-      success: false,
-      message: "Donation amount must be greater than zero"
-    });
-  }
-
-  res.json({
-    success: true,
-    message: `Donation of ₹${amount} received. Thank you!`
-  });
 });
 
 module.exports = router;
