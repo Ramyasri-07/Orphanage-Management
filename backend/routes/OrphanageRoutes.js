@@ -6,10 +6,20 @@ const Organization = require("../models/Organization");
 
 // ---------------- EMAIL SETUP ----------------
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+transporter.verify(function (error, success) {
+  if (error) {
+    console.log("MAIL ERROR:", error);
+  } else {
+    console.log("MAIL SERVER READY");
   }
 });
 
@@ -105,13 +115,11 @@ router.post("/send-otp", async (req, res) => {
     });
 
   } catch (error) {
-  console.log("SEND OTP ERROR:", error);
-
-  res.status(500).json({
-    success: false,
-    message: error.message
-  });
-}
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 });
 
 
