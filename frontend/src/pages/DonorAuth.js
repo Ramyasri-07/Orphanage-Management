@@ -12,7 +12,7 @@ function DonorAuth() {
     }
   }, [navigate]);
 
-  const [isSignup, setIsSignup] = useState(true);
+ const [isSignup, setIsSignup] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -44,6 +44,7 @@ function DonorAuth() {
       "https://orphanage-backend-dgaf.onrender.com/api/donor/send-otp",
       {
         login: formData.login
+        
       }
     );
 
