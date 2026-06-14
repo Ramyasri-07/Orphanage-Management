@@ -32,7 +32,7 @@ function DonorAuth() {
 
   const handleSignup = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/donor/signup",
+      "https://orphanage-backend-dgaf.onrender.com/api/donor/signup",
       formData
     );
 
@@ -41,7 +41,7 @@ function DonorAuth() {
 
   const sendOtp = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/donor/send-otp",
+      "https://orphanage-backend-dgaf.onrender.com/api/donor/send-otp",
       {
         login: formData.login
       }
@@ -56,7 +56,7 @@ function DonorAuth() {
 
   const verifyOtp = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/donor/verify-otp",
+      "https://orphanage-backend-dgaf.onrender.com/api/donor/verify-otp",
       {
         login: formData.login,
         otp: formData.otp

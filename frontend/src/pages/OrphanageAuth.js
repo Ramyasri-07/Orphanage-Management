@@ -41,7 +41,7 @@ const handleSignup = async () => {
   }
 
   const res = await axios.post(
-    "http://localhost:5000/api/orphanage/signup",
+    "https://orphanage-backend-dgaf.onrender.com/orphanage/signup",
     formData
   );
 
@@ -52,7 +52,7 @@ const handleSignup = async () => {
 
   const sendOtp = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/orphanage/send-otp",
+      "https://orphanage-backend-dgaf.onrender.com/api/orphanage/send-otp",
       {
         login: formData.login
       }
@@ -67,7 +67,7 @@ const handleSignup = async () => {
 
   const verifyOtp = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/orphanage/verify-otp",
+      "https://orphanage-backend-dgaf.onrender.com/api/orphanage/verify-otp",
       {
         login: formData.login,
         otp: formData.otp

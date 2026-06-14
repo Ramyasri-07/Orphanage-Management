@@ -32,7 +32,7 @@ function WelcomeOrphanage() {
   const fetchNeeds = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/needs/orphanage?login=${encodeURIComponent(userEmailOrPhone)}`
+        `https://orphanage-backend-dgaf.onrender.com/api/needs/orphanage?login=${encodeURIComponent(userEmailOrPhone)}`
       );
       setNeeds(res.data);
     } catch (err) {
@@ -58,7 +58,7 @@ function WelcomeOrphanage() {
       }
 
       const res = await axios.post(
-        "http://localhost:5000/api/needs/create",
+        "https://orphanage-backend-dgaf.onrender.com/api/needs/create",
         {
           login: userEmailOrPhone,
           title: form.title,

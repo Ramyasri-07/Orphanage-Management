@@ -22,7 +22,7 @@ function WelcomeDonor() {
   }, [navigate]);
 
   const fetchNeeds = async () => {
-    const res = await axios.get("http://localhost:5000/api/needs/all");
+    const res = await axios.get("https://orphanage-backend-dgaf.onrender.com/api/needs/all");
     
     setNeeds(res.data);
   };
@@ -112,7 +112,7 @@ function WelcomeDonor() {
                 const transactionId = "TXN" + Date.now();
                 try {
                   // STEP 6 — Send Data To Backend
-                  await axios.post("http://localhost:5000/api/needs/donate", {
+                  await axios.post("https://orphanage-backend-dgaf.onrender.com/api/needs/donate", {
                     amount: Number(amount),
                     paymentMethod,
                     transactionId,

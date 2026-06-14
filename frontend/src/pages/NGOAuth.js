@@ -33,7 +33,7 @@ function NGOAuth() {
 
   const handleSignup = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/ngo/signup",
+      "hhttps://orphanage-backend-dgaf.onrender.com/api/ngo/signup",
       formData
     );
 
@@ -42,7 +42,7 @@ function NGOAuth() {
 
   const sendOtp = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/ngo/send-otp",
+      "https://orphanage-backend-dgaf.onrender.com/api/ngo/send-otp",
       {
         login: formData.login
       }
@@ -57,7 +57,7 @@ function NGOAuth() {
 
   const verifyOtp = async () => {
     const res = await axios.post(
-      "http://localhost:5000/api/ngo/verify-otp",
+      "https://orphanage-backend-dgaf.onrender.com/api/ngo/verify-otp",
       {
         login: formData.login,
         otp: formData.otp
