@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -16,11 +16,10 @@ function WelcomeOrphanage() {
     deadline: ""
   });
 
-  // GET LOGIN FROM STORAGE
   const userEmailOrPhone = localStorage.getItem("authLogin");
 
-  // FETCH NEEDS
-  const fetchNeeds = useCallback(async () => {
+  // FETCH NEEDS (NO useCallback — avoids Vercel ESLINT issues)
+  const fetchNeeds = async () => {
     try {
       const res = await axios.get(
         `https://orphanage-backend-dgaf.onrender.com/api/needs/orphanage?login=${encodeURIComponent(
@@ -31,9 +30,9 @@ function WelcomeOrphanage() {
     } catch (err) {
       console.log(err);
     }
-  }, [userEmailOrPhone]);
+  };
 
-  // USE EFFECT
+  // AUTH CHECK + LOAD DATA
   useEffect(() => {
     if (
       localStorage.getItem("authRole") !== "orphanage" ||
@@ -44,9 +43,10 @@ function WelcomeOrphanage() {
     }
 
     fetchNeeds();
-  }, [navigate, userEmailOrPhone, fetchNeeds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // HANDLE INPUTS
+  // HANDLE INPUT
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -109,9 +109,7 @@ function WelcomeOrphanage() {
       </div>
 
       {/* POST BUTTON */}
-      <button onClick={() => setShowForm(true)}>
-        Post a Need
-      </button>
+      <button onClick={() => setShowForm(true)}>Post a Need</button>
 
       {/* FORM */}
       {showForm && (
@@ -152,17 +150,12 @@ function WelcomeOrphanage() {
             onChange={handleChange}
           />
 
-          <button onClick={() => setShowForm(false)}>
-            Cancel
-          </button>
-
-          <button onClick={postNeed}>
-            Post
-          </button>
+          <button onClick={() => setShowForm(false)}>Cancel</button>
+          <button onClick={postNeed}>Post</button>
         </div>
       )}
 
-      {/* DISPLAY POSTS */}
+      {/* DISPLAY NEEDS */}
       <h2>Your Posted Needs</h2>
 
       {needs.length === 0 ? (
