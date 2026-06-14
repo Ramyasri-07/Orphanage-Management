@@ -98,12 +98,12 @@ router.post("/send-otp", async (req, res) => {
     await user.save();
 
     // OPTIONAL EMAIL OTP (uncomment if needed)
-    // await transporter.sendMail({
-    //   from: process.env.EMAIL_USER,
-    //   to: user.email,
-    //   subject: "OTP for Login",
-    //   text: `Your OTP is ${otp}. It is valid for 2 minutes.`
-    // });
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: "OTP for Login",
+      text: `Your OTP is ${otp}. It is valid for 2 minutes.`
+    });
 
     console.log("OTP SENT:", otp);
 
