@@ -4,40 +4,39 @@ const Organization = require("../models/Organization");
 
 // GET ALL NEEDS FOR DONORS
 router.get("/all", async (req, res) => {
- const organizations = await Organization.find({});
+  try {
+    const organizations = await Organization.find({});
 
-  const needs = organizations.flatMap((org) =>
-  org.needs.map((need) => ({
-    _id: need._id,
-    title: need.title,
-    description: need.description,
-    category: need.category,
+    const needs = organizations.flatMap((org) =>
+      org.needs.map((need) => ({
+        _id: need._id,
+        title: need.title,
+        description: need.description,
+        category: need.category,
+        targetAmount: need.targetAmount,
+        donatedAmount: need.donatedAmount || 0,
+        remainingAmount:
+          Number(need.targetAmount) - Number(need.donatedAmount || 0),
+        deadline: need.deadline,
+        orphanageName: org.orphanageName,
+        email: org.email,
+        phone: org.phone
+      }))
+    );
 
-    targetAmount: need.targetAmount,
-    donatedAmount: need.donatedAmount || 0,
-
-   remainingAmount: Number(need.targetAmount) - Number(need.donatedAmount || 0)
-
-    deadline: need.deadline,
-
-    orphanageName: org.orphanageName,
-    email: org.email,
-    phone: org.phone
-  }))
-);
-
-  res.json(needs);
+    res.json(needs);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
 });
 
-// GET NEEDS FOR A SPECIFIC ORPHANAGE
+// GET NEEDS FOR ORPHANAGE
 router.get("/orphanage", async (req, res) => {
   const { login } = req.query;
 
   if (!login) {
-    return res.json({
-      success: false,
-      message: "Login is required"
-    });
+    return res.json({ success: false, message: "Login is required" });
   }
 
   const organization = await Organization.findOne({
@@ -55,9 +54,10 @@ router.get("/orphanage", async (req, res) => {
   res.json(organization.needs);
 });
 
-// POST NEED (SAVE TO ORPHANAGE COLLECTION)
+// CREATE NEED
 router.post("/create", async (req, res) => {
-  const { login, title, description, category, targetAmount, deadline } = req.body;
+  const { login, title, description, category, targetAmount, deadline } =
+    req.body;
 
   const organization = await Organization.findOne({
     $or: [{ email: login }, { phone: login }]
@@ -77,14 +77,16 @@ router.post("/create", async (req, res) => {
     targetAmount,
     deadline
   });
+
   await organization.save();
+
   res.json({
     success: true,
     message: "Need posted successfully"
   });
 });
 
-// DONATE TO A NEED
+// DONATE
 router.post("/donate", async (req, res) => {
   try {
     const { needId, amount } = req.body;
@@ -129,13 +131,10 @@ router.post("/donate", async (req, res) => {
       success: true,
       message: "Donation successful",
       donatedAmount: need.donatedAmount,
-      remainingAmount:
-        need.targetAmount - need.donatedAmount
+      remainingAmount: need.targetAmount - need.donatedAmount
     });
-
   } catch (err) {
     console.log(err);
-
     res.status(500).json({
       success: false,
       message: "Server Error"
