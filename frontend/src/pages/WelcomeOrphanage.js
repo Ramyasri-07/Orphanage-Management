@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function WelcomeOrphanage() {
-
   const navigate = useNavigate();
+
   const [showForm, setShowForm] = useState(false);
   const [needs, setNeeds] = useState([]);
 
@@ -20,25 +20,31 @@ function WelcomeOrphanage() {
   const userEmailOrPhone = localStorage.getItem("authLogin");
 
   // FETCH NEEDS
-  useEffect(() => {
-    if (localStorage.getItem("authRole") !== "orphanage" || !userEmailOrPhone) {
-      navigate("/orphanage-auth");
-      return;
-    }
-
-    fetchNeeds();
-  }, [navigate, userEmailOrPhone]);
-
-  const fetchNeeds = async () => {
+  const fetchNeeds = useCallback(async () => {
     try {
       const res = await axios.get(
-        `https://orphanage-backend-dgaf.onrender.com/api/needs/orphanage?login=${encodeURIComponent(userEmailOrPhone)}`
+        `https://orphanage-backend-dgaf.onrender.com/api/needs/orphanage?login=${encodeURIComponent(
+          userEmailOrPhone
+        )}`
       );
       setNeeds(res.data);
     } catch (err) {
       console.log(err);
     }
-  };
+  }, [userEmailOrPhone]);
+
+  // USE EFFECT
+  useEffect(() => {
+    if (
+      localStorage.getItem("authRole") !== "orphanage" ||
+      !userEmailOrPhone
+    ) {
+      navigate("/orphanage-auth");
+      return;
+    }
+
+    fetchNeeds();
+  }, [navigate, userEmailOrPhone, fetchNeeds]);
 
   // HANDLE INPUTS
   const handleChange = (e) => {
@@ -50,9 +56,7 @@ function WelcomeOrphanage() {
 
   // POST NEED
   const postNeed = async () => {
-
     try {
-
       if (form.description.length > 500) {
         return alert("Description max 500 characters");
       }
@@ -81,7 +85,6 @@ function WelcomeOrphanage() {
         targetAmount: "",
         deadline: ""
       });
-
     } catch (err) {
       console.log(err);
       alert("Error posting need");
@@ -90,14 +93,17 @@ function WelcomeOrphanage() {
 
   return (
     <div>
-
+      {/* HEADER */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1>Orphanage Dashboard</h1>
-        <button onClick={() => {
-          localStorage.removeItem("authRole");
-          localStorage.removeItem("authLogin");
-          navigate("/orphanage-auth");
-        }}>
+
+        <button
+          onClick={() => {
+            localStorage.removeItem("authRole");
+            localStorage.removeItem("authLogin");
+            navigate("/orphanage-auth");
+          }}
+        >
           Logout
         </button>
       </div>
@@ -110,7 +116,6 @@ function WelcomeOrphanage() {
       {/* FORM */}
       {showForm && (
         <div style={{ border: "1px solid black", padding: 10 }}>
-
           <input
             name="title"
             placeholder="Need Title"
@@ -154,7 +159,6 @@ function WelcomeOrphanage() {
           <button onClick={postNeed}>
             Post
           </button>
-
         </div>
       )}
 
@@ -165,18 +169,18 @@ function WelcomeOrphanage() {
         <p>No needs posted yet</p>
       ) : (
         needs.map((n, i) => (
-          <div key={i} style={{ border: "1px solid gray", margin: 10, padding: 10 }}>
-
+          <div
+            key={i}
+            style={{ border: "1px solid gray", margin: 10, padding: 10 }}
+          >
             <h3>{n.title}</h3>
             <p>{n.description}</p>
             <p>Category: {n.category}</p>
             <p>Target: ₹{n.targetAmount}</p>
             <p>Deadline: {n.deadline}</p>
-
           </div>
         ))
       )}
-
     </div>
   );
 }
