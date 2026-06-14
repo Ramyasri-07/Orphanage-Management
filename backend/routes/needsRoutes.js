@@ -16,7 +16,7 @@ router.get("/all", async (req, res) => {
     targetAmount: need.targetAmount,
     donatedAmount: need.donatedAmount || 0,
 
-   remainingAmount: Number(need.targetAmount) - Number(need.donatedAmount || 0);
+   remainingAmount: Number(need.targetAmount) - Number(need.donatedAmount || 0)
 
     deadline: need.deadline,
 
