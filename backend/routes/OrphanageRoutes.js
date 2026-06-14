@@ -6,23 +6,20 @@ const Organization = require("../models/Organization");
 
 // ---------------- EMAIL SETUP ----------------
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  family: 4
 });
 
-transporter.verify(function (error, success) {
-  if (error) {
-    console.log("MAIL ERROR:", error);
-  } else {
-    console.log("MAIL SERVER READY");
-  }
+await transporter.sendMail({
+  from: process.env.EMAIL_USER,
+  to: user.email,
+  subject: "OTP for Login",
+  text: `Your OTP is ${otp}. It is valid for 2 minutes.`
 });
-
 
 // ---------------- SIGNUP ----------------
 router.post("/signup", async (req, res) => {
